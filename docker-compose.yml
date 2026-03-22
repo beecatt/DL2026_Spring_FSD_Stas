@@ -1,0 +1,25 @@
+services:
+  backend:
+    build: ./backend
+    container_name: qrstudio-backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./backend/prisma:/app/prisma
+    working_dir: /app
+    environment:
+      - DATABASE_URL=file:/app/prisma/dev.db
+
+  frontend:
+    build: ./frontend
+    container_name: qrstudio-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    working_dir: /app
+    depends_on:
+      - backend

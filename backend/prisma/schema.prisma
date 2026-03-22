@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+   binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -8,10 +9,11 @@ datasource db {
 }
 
 model QrCode {
-  id         String   @id @default(cuid())
-  content    String
-  size       Int
-  foreground String
-  background String
-  createdAt  DateTime @default(now())
+  id          String   @id @default(cuid())
+  content     String
+  size        Int
+  foreground  String
+  background  String
+  centerImage String?
+  createdAt   DateTime @default(now())
 }

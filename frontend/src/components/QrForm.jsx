@@ -1,10 +1,34 @@
-function QrForm({ formData, setFormData, onSave, saveStatus }) {
+function QrForm({ formData, setFormData, onSave, onClearDraft, saveStatus }) {
     const handleChange = (event) => {
         const { name, value } = event.target;
 
         setFormData((prev) => ({
             ...prev,
             [name]: name === 'size' ? Number(value) : value,
+        }));
+    };
+
+    const handleImageUpload = (event) => {
+        const file = event.target.files?.[0];
+
+        if (!file) {
+            return;
+        }
+
+        const previewUrl = URL.createObjectURL(file);
+
+        setFormData((prev) => ({
+            ...prev,
+            centerImageFile: file,
+            centerImagePreview: previewUrl,
+        }));
+    };
+
+    const removeCenterImage = () => {
+        setFormData((prev) => ({
+            ...prev,
+            centerImageFile: null,
+            centerImagePreview: '',
         }));
     };
 
@@ -62,14 +86,61 @@ function QrForm({ formData, setFormData, onSave, saveStatus }) {
                 </div>
             </div>
 
-            <button
-                type="button"
-                className="primary-button"
-                onClick={onSave}
-                disabled={saveStatus.loading}
-            >
-                {saveStatus.loading ? 'Saving...' : 'Save to history'}
-            </button>
+            <div className="form-group">
+                <label>Center image</label>
+
+                <div className="file-upload-row">
+                    <label htmlFor="centerImage" className="file-upload-button">
+                        Choose image
+                    </label>
+
+                    <span className="file-upload-name">
+                        {formData.centerImageFile
+                            ? formData.centerImageFile.name
+                            : formData.centerImagePreview
+                                ? 'Saved image from history'
+                                : 'No file selected'}
+                    </span>
+
+                    <input
+                        id="centerImage"
+                        name="centerImage"
+                        type="file"
+                        accept="image/*"
+                        className="file-upload-input"
+                        onChange={handleImageUpload}
+                    />
+                </div>
+            </div>
+
+            {formData.centerImagePreview && (
+                <button
+                    type="button"
+                    className="secondary-button remove-image-button"
+                    onClick={removeCenterImage}
+                >
+                    Remove center image
+                </button>
+            )}
+
+            <div className="form-actions">
+                <button
+                    type="button"
+                    className="primary-button"
+                    onClick={onSave}
+                    disabled={saveStatus.loading}
+                >
+                    {saveStatus.loading ? 'Saving...' : 'Save to history'}
+                </button>
+
+                <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={onClearDraft}
+                >
+                    Clear draft
+                </button>
+            </div>
 
             {saveStatus.success && (
                 <p className="status-message success-message">{saveStatus.success}</p>

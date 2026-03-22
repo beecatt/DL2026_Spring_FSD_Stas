@@ -1,4 +1,4 @@
-function HistoryList({ history, onUseAgain, loading, error }) {
+function HistoryList({ history, onUseAgain, onDelete, loading, error }) {
     return (
         <section className="card history-card">
             <h2>History</h2>
@@ -25,15 +25,28 @@ function HistoryList({ history, onUseAgain, loading, error }) {
                                 <p className="history-item-meta">
                                     QR: {item.foreground} | Background: {item.background}
                                 </p>
+                                <p className="history-item-meta">
+                                    Center image: {item.centerImage ? 'Yes' : 'No'}
+                                </p>
                             </div>
 
-                            <button
-                                type="button"
-                                className="secondary-button"
-                                onClick={() => onUseAgain(item)}
-                            >
-                                Use again
-                            </button>
+                            <div className="history-item-actions">
+                                <button
+                                    type="button"
+                                    className="secondary-button"
+                                    onClick={() => onUseAgain(item)}
+                                >
+                                    Use again
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="danger-button"
+                                    onClick={() => onDelete(item.id)}
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </article>
                     ))}
                 </div>

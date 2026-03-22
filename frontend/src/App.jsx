@@ -2,16 +2,41 @@ import { useEffect, useState } from 'react';
 import QrForm from './components/QrForm';
 import QrPreview from './components/QrPreview';
 import HistoryList from './components/HistoryList';
-import { saveQrCode, getQrHistory } from './services/api';
-import './index.css';
+import { saveQrCode, getQrHistory, deleteQrCode } from './services/api';
 
-function App() {
-  const [formData, setFormData] = useState({
+const FORM_STORAGE_KEY = 'qr-studio-form';
+
+const getInitialFormData = () => {
+  const saved = sessionStorage.getItem(FORM_STORAGE_KEY);
+
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      return {
+        content: parsed.content || '',
+        size: parsed.size || 220,
+        foreground: parsed.foreground || '#000000',
+        background: parsed.background || '#ffffff',
+        centerImageFile: null,
+        centerImagePreview: parsed.centerImagePreview || '',
+      };
+    } catch {
+      // ignore broken session storage
+    }
+  }
+
+  return {
     content: '',
     size: 220,
     foreground: '#000000',
     background: '#ffffff',
-  });
+    centerImageFile: null,
+    centerImagePreview: '',
+  };
+};
+
+function App() {
+  const [formData, setFormData] = useState(getInitialFormData);
 
   const [saveStatus, setSaveStatus] = useState({
     loading: false,
@@ -40,6 +65,25 @@ function App() {
   useEffect(() => {
     loadHistory();
   }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem(
+      FORM_STORAGE_KEY,
+      JSON.stringify({
+        content: formData.content,
+        size: formData.size,
+        foreground: formData.foreground,
+        background: formData.background,
+        centerImagePreview: formData.centerImagePreview,
+      })
+    );
+  }, [
+    formData.content,
+    formData.size,
+    formData.foreground,
+    formData.background,
+    formData.centerImagePreview,
+  ]);
 
   const handleSave = async () => {
     if (!formData.content.trim()) {
@@ -82,7 +126,45 @@ function App() {
       size: item.size,
       foreground: item.foreground,
       background: item.background,
+      centerImageFile: null,
+      centerImagePreview: item.centerImage
+        ? `http://localhost:5000${item.centerImage}`
+        : '',
     });
+
+    setSaveStatus({
+      loading: false,
+      success: '',
+      error: '',
+    });
+  };
+
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm('Delete this QR code from history?');
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteQrCode(id);
+      await loadHistory();
+    } catch (error) {
+      setHistoryError(error.message || 'Failed to delete QR code.');
+    }
+  };
+
+  const handleClearDraft = () => {
+    setFormData({
+      content: '',
+      size: 220,
+      foreground: '#000000',
+      background: '#ffffff',
+      centerImageFile: null,
+      centerImagePreview: '',
+    });
+
+    sessionStorage.removeItem(FORM_STORAGE_KEY);
 
     setSaveStatus({
       loading: false,
@@ -104,6 +186,7 @@ function App() {
             formData={formData}
             setFormData={setFormData}
             onSave={handleSave}
+            onClearDraft={handleClearDraft}
             saveStatus={saveStatus}
           />
 
@@ -114,6 +197,7 @@ function App() {
           <HistoryList
             history={history}
             onUseAgain={handleUseAgain}
+            onDelete={handleDelete}
             loading={historyLoading}
             error={historyError}
           />
