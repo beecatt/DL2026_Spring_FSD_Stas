@@ -35,6 +35,19 @@ const getInitialFormData = () => {
   };
 };
 
+const looksLikeUrl = (value) => {
+  return value.includes('.') && !value.includes(' ');
+};
+
+const isValidUrl = (value) => {
+  try {
+    new URL(value.startsWith('http') ? value : `https://${value}`);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 function App() {
   const [formData, setFormData] = useState(getInitialFormData);
 
@@ -86,11 +99,22 @@ function App() {
   ]);
 
   const handleSave = async () => {
-    if (!formData.content.trim()) {
+    const trimmedContent = formData.content.trim();
+
+    if (!trimmedContent) {
       setSaveStatus({
         loading: false,
         success: '',
         error: 'Please enter text or URL before saving.',
+      });
+      return;
+    }
+
+    if (looksLikeUrl(trimmedContent) && !isValidUrl(trimmedContent)) {
+      setSaveStatus({
+        loading: false,
+        success: '',
+        error: 'Please enter a valid URL starting with http:// or https://',
       });
       return;
     }

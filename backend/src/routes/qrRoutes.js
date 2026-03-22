@@ -60,6 +60,20 @@ router.post('/', upload.single('centerImage'), async (req, res) => {
 
         const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
+        const existingQrCode = await prisma.qrCode.findFirst({
+            where: {
+                content: content.trim(),
+                size: Number(size),
+                foreground,
+                background,
+                centerImage: imagePath,
+            },
+        });
+
+        if (existingQrCode) {
+            return res.status(409).json({ error: 'This QR code already exists in history.' });
+        }
+
         const newQrCode = await prisma.qrCode.create({
             data: {
                 content: content.trim(),
