@@ -1,51 +1,109 @@
 # QR Studio
 
-QR Studio is a fullstack web application that allows users to generate
-customizable QR codes and save generation history.
+QR Studio — это веб-приложение для генерации и кастомизации QR-кодов с возможностью добавления изображения в центр, сохранения истории и повторного использования.
 
-## Features
+## Возможности
 
-- Generate QR codes from text or URL
-- Customize QR size and colors
-- Save QR generation history
-- REST API for managing QR records
+- Генерация QR-кодов в реальном времени
+- Настройка:
+  - текста/URL
+  - размера
+  - цветов (QR и фон)
+- Добавление изображения в центр QR-кода
+- Скачивание QR-кода в формате PNG
+- Сохранение QR-кодов в базе данных
+- История созданных QR-кодов
+- Повторное использование настроек
+- Удаление QR-кодов (с удалением файла изображения)
+- Сохранение текущего состояния формы (sessionStorage)
 
-## Tech Stack
+## Архитектура
 
-Frontend:
-- React
-- Vite
-- CSS
+Проект состоит из двух частей:
 
-Backend:
-- Node.js
-- Express
+### Frontend
+- React + Vite
+- Управление состоянием через useState
+- Работа с API через fetch
+- sessionStorage для сохранения черновика
 
-Database:
-- SQLite
-
-ORM:
-- Prisma
-
-## Project structure
-
-backend/
-- Express server
+### Backend
+- Node.js + Express
 - Prisma ORM
-- SQLite database
+- SQLite база данных
+- Multer для загрузки файлов
+- Хранение изображений в папке uploads
 
-frontend/
-- React application
+## Структура проекта
+project/
+├── frontend/
+├── backend/
+├── docker-compose.yml
 
-docs/
-- design.md
-- architecture notes
 
-## Run backend
+## Запуск без Docker
 
+### Backend
 cd backend
+npm install
+npx prisma generate
+npm run dev
+
+
+### Frontend
+cd frontend
 npm install
 npm run dev
 
-Server will run at:
-http://localhost:5000
+
+Открыть в браузере:
+http://localhost:5173
+
+## Запуск через Docker
+
+В корне проекта:
+docker compose up --build
+После запуска:
+- Frontend: http://localhost:5173
+- Backend: http://localhost:5000
+
+---
+
+## Работа с изображениями
+
+- Изображения загружаются через Multer
+- Сохраняются в `backend/uploads`
+- В базе данных хранится путь к файлу
+- При удалении записи файл также удаляется с сервера
+
+---
+
+## Хранение данных
+
+- QR-коды хранятся в SQLite базе
+- Изображения — в файловой системе
+- Черновик формы — в sessionStorage
+
+---
+
+## Особенности реализации
+
+- Центр QR-кода корректно масштабируется независимо от размера изображения
+- Используется высокий уровень коррекции ошибок QR (level H)
+- UI адаптивен под мобильные устройства
+- Все кнопки унифицированы по стилю
+
+---
+
+## Технологии
+
+- React
+- Vite
+- Node.js
+- Express
+- Prisma
+- SQLite
+- Multer
+- Docker
+
+
